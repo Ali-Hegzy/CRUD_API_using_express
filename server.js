@@ -2,6 +2,8 @@ const express = require('express');
 const app =  express();
 const PORT = 3000;
 
+app.use(express.json()); // to read the request from POST
+
 const tasks = [
     {
         id : 1,
@@ -51,5 +53,19 @@ app.get("/health",(req,res)=>{
     });
 });
 
+app.post("/tasks",(req,res) => {
+    const id = tasks.at(-1).id + 1;
+    const { title } = req.body;
+
+    const task = {
+        id : id,
+        title : title,
+        done : false
+    };
+
+    tasks.push(task);
+
+    res.status(201).json(task);
+});
 
 app.listen(PORT);
