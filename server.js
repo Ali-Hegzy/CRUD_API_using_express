@@ -2,8 +2,18 @@ const express = require('express');
 const app =  express();
 const PORT = 3000;
 
-app.get("/",(res,req)=>{
-    req.send('Hello world');
+app.get("/",(req,res)=>{
+    res.status(200).json({
+        name : "Task API",
+        version : "1.0",
+        endpoints : ["/tasks"]
+    });
+});
+
+app.get("/health",(req,res)=>{
+    res.status(200).json({
+        status : "ok"
+    });
 });
 
 
