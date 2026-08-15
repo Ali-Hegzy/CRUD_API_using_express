@@ -22,7 +22,8 @@ app.get("/tasks",(req,res) => {
 
 app.get("/tasks/:id",(req,res) => {
     const id = parseInt(req.params.id);
-    const task = tasks.find(t => t.id === id);
+    const stmt = db.prepare('SELECT * FROM tasks WHERE id = ?')
+    const task = stmt.get(id);
 
     if (!task){
         return res.status(404).json({
