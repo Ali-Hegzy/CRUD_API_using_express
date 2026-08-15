@@ -6,7 +6,7 @@ db.exec(`
     CREATE TABLE IF NOT EXISTS tasks(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(255) NOT NULL,
-        DONE INTEGER DEFAULT 0
+        done INTEGER DEFAULT 0
     )
     `);
 

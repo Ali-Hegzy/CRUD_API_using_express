@@ -57,33 +57,35 @@ app.post("/tasks",(req,res) => {
 
 app.put("/tasks/:id",(req,res) => {
     const id = parseInt(req.params.id);
-    const task = tasks.find(t => t.id === id);
     const { title, done } = req.body;
-
-    if(!task){
-        return res.status(404).json({
-            error : `Task ${id} not found`
-        });
-    }
     
-    if(!done || !title){
+    if(!title || typeof title !== "string" || title.trim() === '' || typeof done != "boolean"){
         return res.status(400).json({
             error : `Invalid body`
         });
     }
 
-    task.done = done;
-    task.title = title;
+    const stmt = db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?');
+    const task = stmt.run(title, done ? 1 : 0, id);
+
+    if(task.changes === 0){
+        return res.status(404).json({
+            error : `Task ${id} not found`
+        });
+    }
 
     res.json(task);
 });
 
 app.delete("/tasks/:id",(req,res) => {
     const id = parseInt(req.params.id);
-    const index = tasks.findIndex(t => t.id === id);
+    const stmt = db.prepare('DELETE FROM tasks WHERE id = ?');
+    const task = stmt.run(id);
 
-    if (index !== -1) {
-        tasks.splice(index,1);
+    if(task.changes === 0){
+        return res.status(404).json({
+            error : `Task ${id} not found`
+        });
     }
 
     res.status(204).json({
