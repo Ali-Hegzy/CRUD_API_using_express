@@ -1,26 +1,9 @@
 const express = require('express');
 const app =  express();
+const db = require("./database");
 const PORT = 3000;
 
 app.use(express.json()); // to read the request from POST
-
-const tasks = [
-    {
-        id : 1,
-        title : "task1",
-        done : true,
-    },
-    {
-        id : 2,
-        title : "task2",
-        done : true,
-    },
-    {
-        id : 3,
-        title : "task3",
-        done : false,
-    },
-];
 
 app.get("/",(req,res)=>{
     res.status(200).json({
@@ -31,6 +14,9 @@ app.get("/",(req,res)=>{
 });
 
 app.get("/tasks",(req,res) => {
+    const stmt = db.prepare('SELECT * FROM tasks');
+    const tasks = stmt.all();
+
     res.status(200).json(tasks);
 });
 
