@@ -41,16 +41,16 @@ app.get("/health",(req,res)=>{
 });
 
 app.post("/tasks",(req,res) => {
-    const id = tasks.at(-1).id + 1;
     const { title } = req.body;
 
-    const task = {
-        id : id,
-        title : title,
-        done : false
-    };
+    if(!title || typeof title !== "string" || title.trim() === ''){
+        return res.status(404).json({
+            error : `Missing title`
+        });
+    }
 
-    tasks.push(task);
+    const stmt = db.prepare("INSERT INTO tasks (title) VALUES (?) ");
+    const task = stmt.run(title);
 
     res.status(201).json(task);
 });
