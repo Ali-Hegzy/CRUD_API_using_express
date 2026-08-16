@@ -1,6 +1,7 @@
 const express = require('express');
 const app =  express();
-const db = require("./database");
+// const db = require("./database");
+const taskRepo = require('./repositories/taskRepository');
 const PORT = 3000;
 
 app.use(express.json()); // to read the request from POST
@@ -13,17 +14,15 @@ app.get("/",(req,res)=>{
     });
 });
 
-app.get("/tasks",(req,res) => {
-    const stmt = db.prepare('SELECT * FROM tasks');
-    const tasks = stmt.all();
+app.get("/tasks",async (req,res) => {
+    const tasks = await taskRepo.getAllTasks();
 
     res.status(200).json(tasks);
 });
 
-app.get("/tasks/:id",(req,res) => {
+app.get("/tasks/:id",async (req,res) => {
     const id = parseInt(req.params.id);
-    const stmt = db.prepare('SELECT * FROM tasks WHERE id = ?')
-    const task = stmt.get(id);
+    const task = await taskRepo.getTask(id);
 
     if (!task){
         return res.status(404).json({
@@ -40,7 +39,7 @@ app.get("/health",(req,res)=>{
     });
 });
 
-app.post("/tasks",(req,res) => {
+app.post("/tasks",async (req,res) => {
     const { title } = req.body;
 
     if(!title || typeof title !== "string" || title.trim() === ''){
@@ -49,13 +48,12 @@ app.post("/tasks",(req,res) => {
         });
     }
 
-    const stmt = db.prepare("INSERT INTO tasks (title) VALUES (?) ");
-    const task = stmt.run(title);
+    const task = await taskRepo.createTask(title);
 
     res.status(201).json(task);
 });
 
-app.put("/tasks/:id",(req,res) => {
+app.put("/tasks/:id",async (req,res) => {
     const id = parseInt(req.params.id);
     const { title, done } = req.body;
     
@@ -65,8 +63,7 @@ app.put("/tasks/:id",(req,res) => {
         });
     }
 
-    const stmt = db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?');
-    const task = stmt.run(title, done ? 1 : 0, id);
+    const task = await taskRepo.updateTask(title, done, id);
 
     if(task.changes === 0){
         return res.status(404).json({
@@ -77,20 +74,17 @@ app.put("/tasks/:id",(req,res) => {
     res.json(task);
 });
 
-app.delete("/tasks/:id",(req,res) => {
+app.delete("/tasks/:id",async (req,res) => {
     const id = parseInt(req.params.id);
-    const stmt = db.prepare('DELETE FROM tasks WHERE id = ?');
-    const task = stmt.run(id);
+    const task = await taskRepo.deleteTask(id);
 
-    if(task.changes === 0){
+    if(!task){
         return res.status(404).json({
             error : `Task ${id} not found`
         });
     }
 
-    res.status(204).json({
-        status : "Item deleted successfully"
-    });
+    res.status(204).send();
 });
 
 app.listen(PORT);
