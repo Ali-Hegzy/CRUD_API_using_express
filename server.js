@@ -14,6 +14,12 @@ app.get("/",(req,res)=>{
     });
 });
 
+app.get("/health",(req,res)=>{
+    res.status(200).json({
+        status : "ok"
+    });
+});
+
 app.get("/tasks",async (req,res) => {
     const tasks = await taskRepo.getAllTasks();
 
@@ -31,12 +37,6 @@ app.get("/tasks/:id",async (req,res) => {
     }
 
     res.status(200).json(task);
-});
-
-app.get("/health",(req,res)=>{
-    res.status(200).json({
-        status : "ok"
-    });
 });
 
 app.post("/tasks",async (req,res) => {
