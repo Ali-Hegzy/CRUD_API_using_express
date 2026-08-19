@@ -2,6 +2,7 @@ const express = require('express');
 const app =  express();
 // const db = require("./database");
 const taskRepo = require('./repositories/taskRepository');
+const {supabase} = require('./src/supabaseClient');
 const PORT = 3000;
 
 app.use(express.json()); // to read the request from POST
@@ -85,6 +86,38 @@ app.delete("/tasks/:id",async (req,res) => {
     }
 
     res.status(204).send();
+});
+
+app.post('/auth/signup',async (req,res)=>{
+    const {email, password} = req.body;
+
+    const {data,error} = await supabase.auth.signUp({
+        email : email,
+        password : password,
+    });
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    res.status(201).json(data);
+});
+
+app.post('/auth/login',async (req,res)=>{
+    const {email, password} = req.body;
+
+    const {data,error} = await supabase.auth.signInWithPassword({
+        email : email,
+        password : password,
+    });
+
+    if (error) 
+    {
+        if(error.message === "Invalid login credentials"){
+            return res.status(401).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+    }
+
+    res.status(201).json(data);
 });
 
 app.listen(PORT);
