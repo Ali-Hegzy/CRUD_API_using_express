@@ -88,6 +88,7 @@ app.delete("/tasks/:id",async (req,res) => {
     res.status(204).send();
 });
 
+// AUTH -- JWT
 app.post('/auth/signup',async (req,res)=>{
     const {email, password} = req.body;
 
@@ -119,5 +120,22 @@ app.post('/auth/login',async (req,res)=>{
 
     res.status(201).json(data);
 });
+
+app.get('/public/info',async (req, res) => {
+    res.status(200).json({"message" : "Welcome stranger! This info is public."});
+});
+
+app.get('/protected/info', async (req, res) => {
+
+    const authHeader = req.header.authorization;
+
+    return res.json(authHeader);
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: "Access token required" });
+    }
+
+    res.status(200).send("hello");
+})
 
 app.listen(PORT);
