@@ -126,10 +126,7 @@ app.get('/public/info',async (req, res) => {
 });
 
 app.get('/protected/info', async (req, res) => {
-
-    const authHeader = req.header.authorization;
-
-    return res.json(authHeader);
+    const authHeader = req.headers.authorization; // header and headers
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: "Access token required" });
