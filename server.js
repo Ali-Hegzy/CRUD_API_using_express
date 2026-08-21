@@ -3,6 +3,7 @@ const app =  express();
 // const db = require("./database");
 const taskRepo = require('./repositories/taskRepository');
 const {supabase} = require('./src/supabaseClient');
+const middleware = require('./middleware/auth');
 const PORT = 3000;
 
 app.use(express.json()); // to read the request from POST
@@ -125,38 +126,16 @@ app.get('/public/info',async (req, res) => {
     res.status(200).json({"message" : "Welcome stranger! This info is public."});
 });
 
-app.get('/protected/info', async (req, res) => {
-    const authHeader = req.headers.authorization; // header and headers
+app.get('/auth/logout', middleware.getUserAuth, (req,res) => {
+    res.status(204).json({"message":"Logged out successfully"});
+});
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: "Access token required" });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    const { user, error} = await supabase.auth.getUser(token);
-
-    if(error || !user){
-        return res.status(401).json({error : "Invalid or expired token"});
-    }
-
+app.get('/protected/info', middleware.getUserAuth, (req, res) => {
     res.status(200).send("hello");
 })
 
-app.get('/protected/profile', async (req, res) => {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: "Access token required" });
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    const {data : {user} , error} = await supabase.auth.getUser(token);
-
-    if(error || !user){
-        return res.status(401).json({error : "Invalid or expired token"});
-    }
+app.get('/protected/profile', middleware.getUserAuth, (req, res) => {
+    const user = req.user;
 
     res.status(200).json({
         id : user.id,
