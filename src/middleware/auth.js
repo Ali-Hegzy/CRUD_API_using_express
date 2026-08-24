@@ -1,4 +1,4 @@
-const {supabase} = require('../src/supabaseClient');
+const {supabase} = require('../config/supabaseClient');
 
 async function getUserAuth(req, res, next){
     try{
