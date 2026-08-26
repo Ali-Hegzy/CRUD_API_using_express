@@ -1,6 +1,8 @@
 require('dotenv').config();
 const OpenAI = require('openai');
 const outputSchema = require('./schema');
+const fs = require('fs');
+const path = require('path');
 
 const client = new OpenAI({
     baseURL  : process.env.LLM_BASE_URL,
@@ -17,19 +19,13 @@ async function main(input){
         return outputSchema.parse(stubResponse);
     }
 
-    const systemPrompt = `You are a vocabulary tidying assistant.
-                    Task:
-                    1. Replace messy vocabulary/abbreviations with proper terms (e.g. "SWE" -> "Software Engineer").
-                    2. Never change normal vocabulary or delete text.
-                    3. If unsure, return the word with your low confidence guess in square brackets "[guess]".
-                    4. Return ONLY valid JSON conforming to this schema:
-                    {
-                    "text": "tidy string",
-                    "confidence": 0.0 to 1.0
-                    }`;
+    const systemPrompt = fs.readFileSync(
+        path.join(__dirname, '../../prompts/tidy-v1.md'),'utf-8'
+    );
 
     const res = await client.chat.completions.create({
         model : process.env.LLM_MODEL,
+        temperature : 0.2,
         response_format : { type: "json_object" },
         messages : [
             {role : 'system', content : systemPrompt},
